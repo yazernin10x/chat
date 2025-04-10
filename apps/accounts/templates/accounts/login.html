@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}Connexion - ChatChou{% endblock %}
+
+{% block content %}
+<div class="min-h-[80vh] bg-base-200 flex flex-col items-center justify-center px-4 py-8 sm:py-12">
+    <!-- En-tête avec style amélioré -->
+    <div class="text-center mb-6 sm:mb-8">
+        <div class="mx-auto h-12 w-12 sm:h-16 sm:w-16 flex items-center justify-center rounded-full bg-primary/10 mb-3 sm:mb-4">
+            <i class="fas fa-user-circle text-primary text-3xl sm:text-4xl"></i>
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold">Connexion</h1>
+        <p class="mt-2 text-xs sm:text-sm text-base-content/60">
+            Connectez-vous à votre compte
+        </p>
+    </div>
+    
+    <div class="card w-full max-w-lg bg-base-100 shadow-xl">
+        <div class="card-body p-4 sm:p-8">
+            <!-- Identifiants de démonstration -->
+            <div class="alert alert-success mb-4 sm:mb-6">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-info-circle text-lg"></i>
+                        <span class="font-semibold">Démo :</span>
+                    </div>
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-6 w-full">
+                        <div class="flex items-center gap-2 bg-base-100 p-2 rounded-lg w-full sm:w-auto">
+                            <i class="fas fa-user text-primary"></i>
+                            <div>
+                                <p class="font-mono font-medium">admin</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 bg-base-100 p-2 rounded-lg w-full sm:w-auto">
+                            <i class="fas fa-key text-primary"></i>
+                            <div>
+                                <p class="font-mono font-medium">chat#123</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulaire -->
+            <form method="post" class="space-y-4 sm:space-y-6">
+                {% csrf_token %}
+
+                {% if form.errors %}
+                    <div class="alert alert-error text-sm">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>Nom d'utilisateur ou mot de passe incorrect.</span>
+                    </div>
+                {% endif %}
+
+                <!-- Champs de formulaire -->
+                <div class="form-control">
+                    <label class="label" for="{{ form.username.id_for_label }}">
+                        <span class="label-text text-sm sm:text-base"><i class="fas fa-user mr-2"></i>Nom d'utilisateur</span>
+                    </label>
+                    {% render_field form.username class="input input-bordered w-full text-sm sm:text-base" value="admin" %}
+                </div>
+
+                <div class="form-control">
+                    <label class="label" for="{{ form.password.id_for_label }}">
+                        <span class="label-text text-sm sm:text-base"><i class="fas fa-lock mr-2"></i>Mot de passe</span>
+                    </label>
+                    {% render_field form.password class="input input-bordered w-full text-sm sm:text-base" value="chat#123" %}
+                </div>
+
+                <!-- Bouton de connexion -->
+                <button type="submit" class="btn btn-primary w-full gap-2 text-sm sm:text-base">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Se connecter
+                </button>
+
+                <!-- Liens -->
+                <div class="divider text-sm">ou</div>
+                
+                <div class="text-center space-y-2 sm:space-y-3">
+                    <a href="{% url 'accounts:password_reset' %}" class="link link-primary text-xs sm:text-sm block">
+                        <i class="fas fa-key mr-1"></i>Mot de passe oublié ?
+                    </a>
+                    <p class="text-xs sm:text-sm">
+                        Pas encore de compte ? 
+                        <a href="{% url 'accounts:register' %}" class="link link-primary">
+                            <i class="fas fa-user-plus mr-1"></i>S'inscrire
+                        </a>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

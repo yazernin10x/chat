@@ -1,0 +1,98 @@
+<header class="bg-base-200 border-b border-emerald-100 dark:border-sky-800/30 shadow-md">
+    <nav class="container mx-auto flex justify-between items-center py-4 px-6">
+        <!-- Logo -->
+        <a href="{% url 'index' %}" class="flex items-center space-x-3 group">
+            <i class="fas fa-comments text-3xl text-teal-600 dark:text-teal-400 group-hover:scale-110 transition-transform"></i>
+            <span class="text-2xl font-extrabold text-black dark:text-black">
+                ChatChou
+            </span>
+        </a>
+
+        <!-- Liens utilisateur -->
+        <div class="flex items-center space-x-8">
+            {% if user.is_authenticated %}
+                <a href="{% url 'rooms:list' %}" class="flex items-center px-4 py-2 rounded-lg hover:bg-teal-50 dark:hover:bg-teal-900/20 group transition-all">
+                    <i class="fas fa-message-dots mr-2.5 text-teal-600 dark:text-teal-400 group-hover:scale-110 transition-transform"></i>
+                    <span class="font-medium text-gray-700 dark:text-gray-200 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">Chats</span>
+                </a>
+
+                <!-- Menu déroulant utilisateur -->
+                <div class="dropdown dropdown-end">
+                    <label tabindex="0" class="btn btn-ghost btn-circle avatar hover:ring-2 hover:ring-teal-400 dark:hover:ring-teal-500 transition-all">
+                        <div class="w-10 h-10 rounded-full bg-teal-500 flex items-center justify-center text-white text-lg shadow-inner">
+                            <div class="flex items-center justify-center h-full">
+                                {% if user.first_name and user.last_name %}
+                                    {{ user.first_name.0|upper }}{{ user.last_name.0|upper }}
+                                {% else %}
+                                    {{ user.username|slice:":2"|upper }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </label>
+                    <ul tabindex="0" class="mt-4 dropdown-content menu menu-sm p-2 shadow-xl bg-white/80 
+                    dark:bg-gray-800/90 backdrop-blur-sm rounded-xl w-52 border border-teal-100 dark:border-sky-800/30 z-50">
+                        <!-- Nom d'utilisateur -->
+                        <li class="text-center font-bold text-black dark:text-black">
+                            <div class="flex items-center justify-center space-x-2">
+                                {% comment %} <i class="fas fa-user-circle text-sky-600 dark:text-sky-400"></i> {% endcomment %}
+                                <span>{{ user.username|upper }}</span>
+                            </div>
+                        </li>
+                        <div class="divider my-0.5"></div>
+                        <li>
+                            <a href="{% url 'accounts:profile' %}" class="hover:bg-teal-50 dark:hover:bg-teal-900/20 text-sm group">
+                                <i class="fas fa-id-card text-teal-600 dark:text-teal-400 group-hover:rotate-12 transition-transform"></i>
+                                <span>Profil</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'accounts:logout' %}" id="logout-link" class="hover:bg-teal-50 dark:hover:bg-teal-900/20 text-sm group">
+                                <i class="fas fa-right-from-bracket text-teal-600 dark:text-teal-400 group-hover:translate-x-1 transition-transform"></i>
+                                <span>Déconnexion</span>
+                            </a>
+                        </li>
+                        <div class="divider my-0.5"></div>
+                        <li>
+                            <a href="{% url 'accounts:delete' user.id %}" class="text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 text-sm group">
+                                <i class="fas fa-user-slash group-hover:rotate-12 transition-transform"></i>
+                                <span>Supprimer le compte</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+            {% else %}
+                <a href="{% url 'accounts:register' %}" class="btn btn-ghost btn-sm normal-case text-black dark:text-black hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-colors">
+                    <i class="fas fa-user-plus mr-2"></i>Créer un compte
+                </a>
+                <a href="{% url 'accounts:login' %}" class="btn btn-sm normal-case bg-gradient-to-r from-teal-600 to-sky-600 text-white border-0 hover:from-teal-700 hover:to-sky-700 hover:shadow-lg transition-all">
+                    <i class="fas fa-arrow-right-to-bracket mr-2"></i>Connexion
+                </a>
+            {% endif %}
+        </div>
+    </nav>
+</header>
+
+
+{% block scripts %}
+<script>
+    let logoutLink = document.getElementById('logout-link');
+    if (logoutLink) {
+        logoutLink.addEventListener('click', function(event) {
+            event.preventDefault();
+
+            fetch("{% url 'accounts:logout' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+            }).then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url;
+                }
+            });
+        });
+    }
+</script>
+{% endblock %}

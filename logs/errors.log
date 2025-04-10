@@ -1,0 +1,12 @@
+2025-03-14 00:42:36 | ERROR    | apps.shared.logging:log_exceptions:52 - Une exception non gérée a été levée
+NoneType: None
+
+NoneType: None
+2025-03-14 00:45:25 | ERROR    | apps.shared.logging:log_exceptions:52 - Une exception non gérée a été levée
+NoneType: None
+
+NoneType: None
+2025-03-14 17:42:49 | ERROR    | apps.shared.logging:log_exceptions:52 - Une exception non gérée a été levée
+NoneType: None
+
+NoneType: None

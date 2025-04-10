@@ -1,0 +1,39 @@
+{% load static tailwind_tags %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        {% load static %}
+
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+        <title>{% block title %}Projet{% endblock %}</title>
+
+        <link rel="stylesheet" href="{% static 'css/messages.css' %}">
+        <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+        
+        {% block styles %}{% endblock %}
+
+        {% tailwind_preload_css %}
+        {% tailwind_css %}
+    </head>
+    {% comment %} bg-gray-50  {% endcomment %}
+    <body class="flex flex-col font-sans text-gray-800 min-h-screen flex flex-col">        
+        {% include 'partials/header.html' %}
+
+        <main class="w-full p-6 flex-grow">
+            {% block content %}{% endblock %}
+        </main>
+
+        {% include 'partials/footer.html' %}
+        {% include 'partials/messages.html' %}
+
+        <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+        <script src="{% static 'js/messages.js' %}"></script>
+        <script src="{% static 'js/main.js' %}"></script>
+        {% block scripts %}{% endblock %}
+    </body>
+</html>     

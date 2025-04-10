@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-screen bg-base-200 px-4 py-6 sm:px-6 lg:px-8">
+    <!-- En-tête avec icône déplacé en dehors de la card -->
+    <div class="w-full max-w-md">
+        <div class="text-center mb-4 sm:mb-6">
+            <i class="fa-solid fa-user-circle text-3xl sm:text-4xl text-primary mb-2 sm:mb-3"></i>
+            <h2 class="text-xl sm:text-2xl font-bold">
+                Mettre à jour le profil
+            </h2>
+        </div>
+
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body p-4 sm:p-6">
+                <!-- Formulaire de mise à jour -->
+                <form method="post" enctype="multipart/form-data" class="space-y-4 sm:space-y-6">
+                    {% csrf_token %}
+
+                    <!-- First Name -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text flex justify-between items-center w-full text-sm sm:text-base">
+                                <span><i class="fa-solid fa-user mr-2"></i>Prénom</span>
+                            </span>
+                        </label>
+                        {{ form.first_name|add_class:"input input-bordered w-full text-sm sm:text-base" }}
+                        {% if form.first_name.errors %}
+                            <label class="label">
+                                <span class="label-text-alt text-error text-xs sm:text-sm">{{ form.first_name.errors }}</span>
+                            </label>
+                        {% endif %}
+                    </div>
+
+                    <!-- Last Name -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text flex justify-between items-center w-full text-sm sm:text-base">
+                                <span><i class="fa-solid fa-user mr-2"></i>Nom</span>
+                            </span>
+                        </label>
+                        {{ form.last_name|add_class:"input input-bordered w-full text-sm sm:text-base" }}
+                        {% if form.last_name.errors %}
+                            <label class="label">
+                                <span class="label-text-alt text-error text-xs sm:text-sm">{{ form.last_name.errors }}</span>
+                            </label>
+                        {% endif %}
+                    </div>
+
+                    <!-- Username -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text flex justify-between items-center w-full text-sm sm:text-base">
+                                <span><i class="fa-solid fa-at mr-2"></i>Nom d'utilisateur</span>
+                                <i class="fa-solid fa-star-of-life text-error text-[8px]"></i>
+                            </span>
+                        </label>
+                        {{ form.username|add_class:"input input-bordered w-full text-sm sm:text-base" }}
+                        {% if form.username.errors %}
+                            <label class="label">
+                                <span class="label-text-alt text-error text-xs sm:text-sm">{{ form.username.errors }}</span>
+                            </label>
+                        {% endif %}
+                    </div>
+
+                    <!-- Email -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text flex justify-between items-center w-full text-sm sm:text-base">
+                                <span><i class="fa-solid fa-envelope mr-2"></i>Adresse e-mail</span>
+                                <i class="fa-solid fa-star-of-life text-error text-[8px]"></i>
+                            </span>
+                        </label>
+                        {{ form.email|add_class:"input input-bordered w-full text-sm sm:text-base" }}
+                        {% if form.email.errors %}
+                            <label class="label">
+                                <span class="label-text-alt text-error text-xs sm:text-sm">{{ form.email.errors }}</span>
+                            </label>
+                        {% endif %}
+                    </div>
+
+                    <!-- Phone Number -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text text-sm sm:text-base">
+                                <i class="fa-solid fa-phone mr-2"></i>Numéro de téléphone
+                            </span>
+                        </label>
+                        {{ form.phone_number|add_class:"input input-bordered w-full text-sm sm:text-base" }}
+                        {% if form.phone_number.errors %}
+                            <label class="label">
+                                <span class="label-text-alt text-error text-xs sm:text-sm">{{ form.phone_number.errors }}</span>
+                            </label>
+                        {% endif %}
+                    </div>
+
+                    <!-- Bouton de mise à jour -->
+                    <div class="form-control mt-6">
+                        <button type="submit" class="btn btn-primary text-sm sm:text-base">
+                            <i class="fa-solid fa-save mr-2"></i>Mettre à jour
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Bouton pour changer le mot de passe -->
+                <div class="divider my-4 sm:my-6">OU</div>
+                <a href="{% url 'accounts:password_change' %}" class="btn btn-outline btn-primary text-sm sm:text-base">
+                    <i class="fa-solid fa-key mr-2"></i>Changer le mot de passe
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

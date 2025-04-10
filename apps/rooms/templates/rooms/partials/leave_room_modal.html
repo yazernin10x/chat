@@ -1,0 +1,39 @@
+<!-- Ajouter le modal de confirmation de sortie -->
+<dialog id="leave-room-modal-{{ room.pk }}" class="modal modal-bottom sm:modal-middle">
+    <div class="modal-box w-72 bg-base-200">
+        <form method="dialog">
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        </form>
+        
+        <div class="text-center mb-3">
+            <i class="fa-solid fa-door-open text-2xl text-error"></i>
+            <h2 class="text-lg font-bold">Confirmer le départ</h2>
+        </div>
+
+        <div class="alert alert-error shadow-lg mb-3 text-white">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <div>
+                <p class="text-sm">Êtes-vous sûr de vouloir quitter ce salon ?</p>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-2">
+            <button onclick="closeModal({{ room.pk }}, 'room', 'leave')" 
+                    class="btn btn-success text-white btn-sm">
+                <i class="fa-solid fa-xmark mr-2"></i>
+                <span>Annuler</span>
+            </button>
+            <form action="{% url 'rooms:leave' room.pk %}" method="POST">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-error text-white btn-sm">
+                    <i class="fa-solid fa-door-open mr-2"></i>
+                    <span>Quitter</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+    </form>
+</dialog>

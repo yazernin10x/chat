@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}Salles de discussion - ChatChou{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Header Original - Ne pas modifier -->
+    <div class="text-center mb-12">
+        <h1 class="text-4xl font-bold text-teal-600 dark:text-teal-400 mb-2">
+            <i class="fas fa-comments mr-2 text-teal-500 dark:text-teal-400"></i>Salles de discussion
+        </h1>
+        <p class="text-slate-600 dark:text-slate-400">Rejoignez ou créez une salle de discussion</p>
+    </div>
+
+    <!-- Bouton de création -->
+    {% if rooms.count > 0 %}
+        <div class="flex justify-end mb-8">
+            <button id="create-room-button-00"
+                    class="btn bg-teal-600 hover:bg-teal-700 text-white btn-md sm:btn-lg shadow-lg hover:shadow-teal-500/30 transition-all duration-300 hover:scale-105 group"
+                    hx-get="{% url 'rooms:create' %}"
+                    hx-target="#create-room-modal-container-00"
+                    hx-trigger="click">
+                <i class="fas fa-plus text-base sm:text-lg mr-2 group-hover:rotate-90 transition-transform duration-300"></i>
+                <span>Créer une salle</span>
+            </button>
+        </div>
+        <div id="create-room-modal-container-00"></div>
+    {% endif %}
+
+    <!-- Filtres -->
+    <div class="mb-8">
+        <form method="get" class="flex flex-col sm:flex-row gap-4 items-end justify-start">
+            <div class="form-control min-w-[200px]">
+                <label class="label">
+                    <span class="label-text text-slate-700 dark:text-slate-300">Rechercher</span>
+                </label>
+                <input type="text" name="search" placeholder="Nom ou description..." 
+                       class="input border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 w-full" 
+                       value="{{ request.GET.search }}">
+            </div>
+            
+            <div class="form-control w-fit">
+                <label class="label">
+                    <span class="label-text text-slate-700 dark:text-slate-300">Trier par</span>
+                </label>
+                <select name="sort" class="select border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900">
+                    <option value="recent" {% if request.GET.sort == 'recent' %}selected{% endif %}>Plus récent</option>
+                    <option value="popular" {% if request.GET.sort == 'popular' %}selected{% endif %}>Plus populaire</option>
+                    <option value="name" {% if request.GET.sort == 'name' %}selected{% endif %}>Nom A-Z</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn bg-indigo-600 hover:bg-indigo-700 text-white h-[40px]">
+                <i class="fas fa-filter mr-2"></i>
+                Filtrer
+            </button>
+        </form>
+    </div>
+    
+    <!-- Grille des salons -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for room in rooms %}
+        <div class="card bg-slate-50 dark:bg-slate-800/40 shadow-sm hover:shadow-md transition-all duration-300 min-w-[400px]">
+            <div class="card-body p-4 flex flex-col">
+                <!-- Titre, stats et boutons d'admin sur la même ligne -->
+                <div class="flex items-center justify-between gap-4">
+                    <h2 class="card-title text-lg font-semibold flex items-center gap-2 flex-shrink-0">
+                        <i class="fas fa-hashtag text-primary"></i>{{ room.name }}
+                    </h2>
+
+                    <!-- Stats et boutons d'admin -->
+                    <div class="flex items-center gap-4">
+                        <!-- Infos compactes -->
+                        <div class="flex items-center gap-3 text-sm">
+                            <div class="flex items-center gap-1.5">
+                                <i class="fas fa-users text-purple-500"></i>
+                                <span class="font-medium">{{ room.members.count }}</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <i class="fas fa-circle text-teal-500 text-xs"></i>
+                                <span class="font-medium text-teal-600">{{ room.online_count }}</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 text-base-content/60">
+                                <i class="fas fa-clock text-orange-400"></i>
+                                <span>{{ room.created_at|date:"d/m/Y" }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Boutons admin si propriétaire -->
+                        {% if user.is_authenticated and room.author == user %}
+                        <div class="flex gap-1 pl-2 border-l border-base-300">
+                            <button id="update-room-button-{{ room.pk }}"
+                                class="btn btn-ghost btn-xs btn-circle text-orange-500 hover:bg-amber-100/50"
+                                hx-get="{% url 'rooms:update' room.pk %}"
+                                hx-target="#update-room-modal-container-{{ room.pk }}"
+                                hx-trigger="click">
+                                <i class="fas fa-edit text-warning-900"></i>
+                            </button>
+                            <button id="delete-room-button-{{ room.pk }}"
+                                class="btn btn-ghost btn-xs btn-circle text-red-500 hover:bg-rose-100/50"
+                                hx-get="{% url 'rooms:delete' room.pk %}"
+                                hx-target="#delete-room-modal-container-{{ room.pk }}"
+                                hx-trigger="click">
+                                <i class="fas fa-trash-alt text-error-900"></i>
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Description avec flex-grow pour pousser les boutons vers le bas -->
+                <div class="flex-grow">
+                    {% if room.description %}
+                    <p class="text-sm text-base-content/70 mt-2 line-clamp-2">{{ room.description|truncatechars:100 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Bouton d'action en bas à droite -->
+                <div class="flex justify-end mt-2">
+                    {% if user in room.members.all %}
+                    <a href="{% url 'rooms:detail' room.pk %}" 
+                       class="btn btn-primary btn-sm">
+                        <i class="fas fa-sign-in-alt mr-1"></i>Accéder
+                    </a>
+                    {% else %}
+                    <a href="{% url 'rooms:join' room.pk %}" 
+                       class="btn bg-teal-500 hover:bg-teal-600 text-white btn-sm">
+                        <i class="fas fa-sign-in-alt mr-1"></i>Rejoindre
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full flex flex-col items-center justify-center py-12 px-4">
+            <div class="text-primary/30 text-6xl mb-4">
+                <i class="fas fa-comments-alt"></i>
+                <i class="fas fa-slash-forward transform -rotate-45 text-error/50"></i>
+            </div>
+            <h3 class="text-xl font-semibold text-base-content/70 mb-2">
+                <i class="fas fa-info-circle mr-2"></i>Aucune salle de discussion disponible
+            </h3>
+            <p class="text-base-content/50 text-center max-w-md mb-6">
+                <i class="fas fa-lightbulb mr-2"></i>
+                Soyez le premier à créer une nouvelle salle de discussion !
+            </p>
+            <button id="create-room-button-00"
+                class="btn btn-primary btn-md sm:btn-lg shadow-lg hover:shadow-primary/30 transition-all duration-300 hover:scale-105 group"
+                hx-get="{% url 'rooms:create' %}"
+                hx-target="#create-room-modal-container-00"
+                hx-trigger="click">
+                <i class="fas fa-plus text-base sm:text-lg mr-2 group-hover:rotate-90 transition-transform duration-300"></i>
+                <span>Créer une salle</span>
+            </button>
+
+            <!-- Ajouter le conteneur pour le modal juste après -->
+            <div id="create-room-modal-container-00"></div>
+        </div>
+        {% endfor %}
+    </div>
+    {% for room in rooms %}
+        <!-- Ajouter le conteneur pour le modal juste après 
+            les zones de craches des modals-->
+        <div id="update-room-modal-container-{{ room.pk }}"></div>
+        <div id="delete-room-modal-container-{{ room.pk }}"></div>
+    {% endfor %}
+
+    <!-- Pagination -->
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="mt-8 flex flex-col items-center gap-3">
+        <div class="text-sm text-base-content/70">
+            Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
+        </div>
+        <div class="flex items-center gap-2">
+            {% if page_obj.has_previous %}
+                <a href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" 
+                   class="btn btn-circle btn-sm btn-ghost">
+                    <i class="fas fa-angle-double-left"></i>
+                </a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" 
+                   class="btn btn-circle btn-sm btn-ghost">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            {% endif %}
+            
+            <div class="flex gap-1">
+                {% for num in page_obj.paginator.get_elided_page_range %}
+                    {% if num == page_obj.number %}
+                        <button class="btn btn-circle btn-sm btn-primary">{{ num }}</button>
+                    {% else %}
+                        <a href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" 
+                           class="btn btn-circle btn-sm btn-ghost">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" 
+                   class="btn btn-circle btn-sm btn-ghost">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+                <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" 
+                   class="btn btn-circle btn-sm btn-ghost">
+                    <i class="fas fa-angle-double-right"></i>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'shared/js/modal_utils.js' %}"></script>
+{% endblock %}

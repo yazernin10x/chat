@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% load tz %}
+
+{% block title %}Salle: {{ room.name }} - ChatChou{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <input type="hidden" id="room-pk" value="{{ room.pk }}">
+    <input type="hidden" id="room-name" value="{{ room.name }}">
+    <input type="hidden" id="username" value="{{ request.user.username }}">
+    <!-- Header -->
+    <div class="mb-8 bg-base-200 rounded-xl p-6 shadow-lg">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div class="flex items-center space-x-4">
+                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                    <i class="fas fa-hashtag text-2xl text-primary"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-4 mb-1">
+                        <h1 class="text-3xl font-bold text-primary">{{ room.name }}</h1> | 
+                        <p class="text-sm text-base-content/70">{{ room.members.count }} membres</p>
+                        <div id="connection-status" class="flex items-center gap-3 px-4 py-2 bg-base-200 rounded-full shadow-sm transition-all duration-300 hover:shadow-md">
+                            <div class="relative">
+                                <span class="loading loading-spinner loading-sm text-primary"></span>
+                                <span class="absolute -bottom-1 -right-1 w-2 h-2 bg-warning rounded-full"></span>
+                            </div>
+                            <span class="text-sm font-medium text-base-content/80">Connexion en cours...</span>
+                            <i class="fas fa-signal-stream text-primary/60"></i>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                {% if user in room.members.all %}
+                <button type="button" id="leave-room-button-{{ room.pk }}" 
+                    class="btn btn-error text-white btn-sm hover:scale-105 transition-transform"
+                    hx-get="{% url 'rooms:leave' room.pk %}"
+                    hx-target="#leave-room-modal-container-{{ room.pk }}"
+                    hx-trigger="click">
+                    <i class="fas fa-door-open mr-2"></i>Quitter définitivement la salle
+                </button>
+                {% endif %}
+                <a href="{% url 'rooms:list' %}" 
+                   class="btn btn-ghost bg-dark-200 btn-sm hover:bg-dark-300 transition-colors">
+                    <i class="fas fa-arrow-left mr-2"></i>Retour aux salles
+                </a>
+            </div>
+        </div>
+    </div>
+    <div id="leave-room-modal-container-{{ room.pk }}"></div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <!-- Zone principale de chat -->
+        <div class="md:col-span-3">
+            <div class="card bg-base-100 shadow-xl max-w-3xl mx-auto">
+                <div class="card-body p-4">
+                    <!-- Messages -->
+                    <div class="bg-base-200 rounded-lg p-4 mb-4 h-[500px] overflow-y-auto" id="messageContainer">
+                        <div id="chat-messages-container" class="space-y-3 max-w-2xl mx-auto">
+                            {% for message in room_messages %}
+                                {% if message.action != 'public' %}
+                                    <div class="text-center text-sm opacity-50 my-2">
+                                        {% if message.action == 'join' %}
+                                            {{ message.sender.username }} a rejoint la salle {{ room.name }} à 
+                                            {% timezone "Europe/Paris" %}{{ message.created_at|date:'d/m/Y H:i' }}{% endtimezone %}
+                                        {% elif message.action == 'leave' %}
+                                            {{ message.sender.username }} a quitté la salle {{ room.name }} à 
+                                            {% timezone "Europe/Paris" %}{{ message.created_at|date:'d/m/Y H:i' }}{% endtimezone %}
+                                        {% elif message.action == 'private' %}
+                                            <div class="text-center text-sm opacity-50 my-2">
+                                                Message privé envoyé à {{ message.recipients.first.username }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% else %}
+                                    <div class="chat {% if message.sender == user %}chat-end{% else %}chat-start{% endif %}">
+                                        <div class="chat-header">
+                                            {{ message.sender.username }}
+                                            
+                                            <time class="text-xs opacity-50 ml-1">
+                                            {% timezone "Europe/Paris" %}{{ message.created_at|date:'d/m/Y H:i' }}{% endtimezone %}
+                                            </time>
+                                            {% comment %} {% if message.scope == 'private' %}
+                                                <span class="text-xs opacity-50 ml-1 text-error">
+                                                    @
+                                                </span>
+                                            {% endif %} {% endcomment %}
+                                        </div>
+                                        <div class="chat-bubble {% if message.sender == user %}chat-bubble-primary{% endif %}">
+                                            {{ message.content|linebreaksbr }}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% empty %}
+                                <div id="emptyMessageContainer" class="flex flex-col items-center justify-center h-40 bg-base-200 rounded-xl p-6 opacity-70">
+                                    <div class="w-16 h-16 bg-base-300 rounded-full flex items-center justify-center mb-4">
+                                        <i class="fas fa-comments text-2xl text-base-content/50"></i>
+                                    </div>
+                                    <p class="text-base font-medium text-base-content/70">Aucun message dans cette salle</p>
+                                    <p class="text-sm text-base-content/50 mt-1">Soyez le premier à démarrer la conversation !</p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Input de message -->
+                    <div class="flex gap-2 items-center">
+                        <input 
+                            type="text" 
+                            id="MessageInput"
+                            class="input input-bordered flex-1" 
+                            placeholder="Tapez votre message..."
+                        >
+                        <button 
+                            id="MessageSend" 
+                            class="btn btn-primary"
+                        >
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar utilisateurs -->
+        <div class="md:col-span-1">
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body p-4">
+                    <h2 class="card-title text-lg mb-4">
+                        <i class="fas fa-users mr-2"></i>Utilisateurs
+                    </h2>
+                    <div class="space-y-4">
+                        <!-- Utilisateurs en ligne -->
+                        <div>
+                            <h3 class="text-sm font-semibold text-success mb-2">
+                                {% comment %} <i class="fas fa-circle text-xs mr-1"></i> {% endcomment %}
+                                En ligne
+                            </h3>
+                            <div id="onlineUsers" class="space-y-2">
+                                {% for user in online_users %}
+                                    <div class="flex items-center gap-2 p-2 bg-base-200 rounded-lg">
+                                        <i class="fas fa-circle text-success text-xs"></i>
+                                        <span>{{ user.username }}</span>
+                                    </div>
+                                {% empty %}
+                                    <div id="empty-online-message" class="flex items-center justify-center p-3 bg-base-200/50 rounded-lg">
+                                        <div class="flex items-center gap-2">
+                                            <i class="fas fa-circle text-success/30 text-sm"></i>
+                                            <p class="text-sm text-base-content/50">Aucun utilisateur en ligne</p>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- Utilisateurs hors ligne -->
+                        <div>
+                            <h3 class="text-sm font-semibold text-error mb-2">
+                                {% comment %} <i class="fas fa-circle text-xs mr-1"></i> {% endcomment %}
+                                Hors ligne
+                            </h3>
+                            <div id="offlineUsers" class="space-y-2">
+                                {% for user in offline_users %}
+                                    <div class="flex items-center gap-2 p-2 bg-base-200 rounded-lg">
+                                        <i class="fas fa-circle text-error text-xs"></i>
+                                        <span>{{ user.username }}</span>
+                                    </div>
+                                {% empty %}
+                                    <div id="empty-online-message" class="flex items-center justify-center p-3 bg-base-200/50 rounded-lg">
+                                        <div class="flex items-center gap-2">
+                                            <i class="fas fa-circle text-error/30 text-sm"></i>
+                                            <p class="text-sm text-base-content/50">Aucun utilisateur hors ligne</p>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'shared/js/consumers.js' %}"></script>
+    <script src="{% static 'shared/js/modal_utils.js' %}"></script>
+{% endblock %}
+

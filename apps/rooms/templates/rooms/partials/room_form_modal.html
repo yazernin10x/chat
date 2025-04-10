@@ -1,0 +1,111 @@
+{% load widget_tweaks %}
+
+{% if room %}
+<dialog id="update-room-modal-{{ room.pk }}" class="modal">
+{% else %}
+<dialog id="create-room-modal-00" class="modal">
+{% endif %}
+  <div class="modal-box max-w-2xl w-full mx-auto p-0 bg-base-100 shadow-xl rounded-2xl">
+    <!-- En-tête du modal -->
+    <div class="bg-gradient-to-r from-primary/10 to-primary/5 p-4 sm:p-6 rounded-t-2xl border-b border-base-200">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="bg-primary/10 p-2 rounded-lg">
+            <i class="fas fa-comments text-xl text-primary"></i>
+          </div>
+          {% if room %}
+            <h1 class="text-xl font-bold">Modifier le salon</h1>
+          {% else %}
+            <h1 class="text-xl font-bold">Créer un nouveau salon</h1>
+          {% endif %}
+        </div>
+        <form method="dialog">
+          <button class="btn btn-ghost btn-circle hover:bg-base-200/50 transition-all">
+            <i class="fas fa-xmark text-lg"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Corps du modal -->
+    <div class="p-6 sm:p-8 w-full">
+      {% if room %}
+        <form method="post" class="space-y-6 w-full max-w-2xl mx-auto" action="{% url 'rooms:update' room.pk %}">
+      {% else %}
+        <form method="post" class="space-y-6 w-full max-w-2xl mx-auto" action="{% url 'rooms:create' %}">
+      {% endif %}
+        {% csrf_token %}
+        
+        <!-- Nom du salon -->
+        <div class="form-control w-full">
+          <div class="mb-2">
+            <span class="font-medium flex items-center gap-2">
+                <i class="fas fa-hashtag text-primary/80"></i>
+                Nom du salon
+            </span>
+          </div>
+          {{ form.name|add_class:"input input-bordered w-full" }}
+          {% if form.name.errors %}
+          <label class="label">
+            <span class="label-text-alt text-error flex items-center gap-2">
+              <i class="fas fa-circle-exclamation"></i>
+              {{ form.name.errors|join:", " }}
+            </span>
+          </label>
+          {% endif %}
+        </div>
+
+        <!-- Description du salon -->
+        <div class="form-control w-full">
+          <div class="flex justify-between items-center mb-2">
+            <span class="font-medium flex items-center gap-2">
+                <i class="fas fa-align-left text-primary/80"></i>
+                Description
+            </span>
+            <span class="text-sm text-base-content/60 flex items-center">
+              <i class="fas fa-info-circle mr-1"></i>Optionnel
+            </span>
+          </div>
+          {{ form.description|add_class:"textarea textarea-bordered w-full" }}
+          {% if form.description.errors %}
+          <label class="label">
+            <span class="label-text-alt text-error flex items-center gap-2">
+              <i class="fas fa-circle-exclamation"></i>
+              {{ form.description.errors|join:", " }}
+            </span>
+          </label>
+          {% endif %}
+        </div>
+
+        <!-- Actions -->
+        <div class="flex flex-col sm:flex-row justify-end items-center gap-4 pt-6 border-t border-base-200">
+          <div class="flex w-full sm:w-auto gap-4">
+            <button type="button" 
+                    {% if room %}
+                      onclick="closeModal('{{ room.pk }}', 'room', 'update')"
+                    {% else %}
+                      onclick="closeModal('00', 'room', 'create')"
+                    {% endif %}
+                    class="btn btn-outline hover:btn-error btn-sm w-full sm:w-auto px-6 normal-case transition-all duration-300">
+              <i class="fas fa-times mr-2"></i>Annuler
+            </button>
+            <button type="submit" 
+                    class="btn btn-primary btn-sm w-full sm:w-auto px-6 normal-case flex items-center gap-2 shadow-md hover:shadow-lg transition-all duration-300">
+              {% if room %}
+                <i class="fas fa-save"></i>
+                <span>Enregistrer</span>
+              {% else %}
+                <i class="fas fa-plus"></i>
+                <span>Créer</span>
+              {% endif %}
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <form method="dialog" class="modal-backdrop bg-black/30 backdrop-blur-sm">
+    <button>close</button>
+  </form>
+</dialog>
